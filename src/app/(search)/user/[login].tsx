@@ -25,11 +25,14 @@ import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "@/hooks/use-user";
 import type { CursusUser } from "@/lib/api";
 
+const MAIN_CURSUS_SLUG = "42cursus";
+
 /** Prefers the main 42 cursus, otherwise the most recently started one. */
 function getDefaultCursus(cursusUsers: CursusUser[]) {
   return (
-    cursusUsers.find((cursusUser) => cursusUser.cursus.slug === "42cursus") ??
-    maxBy(cursusUsers, "begin_at")
+    cursusUsers.find(
+      (cursusUser) => cursusUser.cursus.slug === MAIN_CURSUS_SLUG,
+    ) ?? maxBy(cursusUsers, "begin_at")
   );
 }
 
@@ -50,6 +53,11 @@ export default function ProfileScreen() {
   const projects = user
     ? getCompletedProjects(user.projects_users, cursus?.cursus_id)
     : [];
+  // Events aren't tied to a cursus: only list them under the main one.
+  const showEvents = cursus?.cursus.slug === MAIN_CURSUS_SLUG;
+  // Falls back to Projects when switching away from 42cursus on Events.
+  const visibleSection =
+    section === "events" && !showEvents ? "projects" : section;
 
   return (
     <>
@@ -97,22 +105,28 @@ export default function ProfileScreen() {
                   label: "Skills",
                   count: cursus?.skills.length ?? 0,
                 },
-                {
-                  key: "events",
-                  label: "Events",
-                  count: user.events.length,
-                },
+                ...(showEvents
+                  ? [
+                      {
+                        key: "events" as const,
+                        label: "Events",
+                        count: user.events.length,
+                      },
+                    ]
+                  : []),
               ]}
-              selected={section}
+              selected={visibleSection}
               onSelect={setSection}
             />
-            {section === "projects" ? (
+            {visibleSection === "projects" ? (
               <ProjectsList projects={projects} />
             ) : null}
-            {section === "skills" ? (
+            {visibleSection === "skills" ? (
               <SkillsList skills={cursus?.skills ?? []} />
             ) : null}
-            {section === "events" ? <EventsList events={user.events} /> : null}
+            {visibleSection === "events" ? (
+              <EventsList events={user.events} />
+            ) : null}
           </>
         ) : null}
       </ScrollView>

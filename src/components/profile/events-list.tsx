@@ -1,3 +1,4 @@
+import { SymbolView } from "expo-symbols";
 import lowerCase from "lodash/lowerCase";
 import upperFirst from "lodash/upperFirst";
 import { StyleSheet, Text, View } from "react-native";
@@ -33,7 +34,7 @@ export function EventsList({ events }: { events: FtEvent[] }) {
               key={event.id}
               style={[styles.row, index > 0 && [separator, styles.nextRow]]}
               accessible
-              accessibilityLabel={`${event.name}, ${date.toLocaleDateString()}${upcoming ? ", upcoming" : ""}`}
+              accessibilityLabel={`${event.name}, ${date.toLocaleDateString()}, ${event.nbr_subscribers} subscribed${upcoming ? ", upcoming" : ""}`}
             >
               <View
                 style={[styles.date, { backgroundColor: theme.background }]}
@@ -49,21 +50,38 @@ export function EventsList({ events }: { events: FtEvent[] }) {
                 </Text>
               </View>
               <View style={styles.info}>
-                <Text
-                  style={[styles.name, { color: theme.text }]}
-                  numberOfLines={2}
-                >
-                  {event.name}
-                </Text>
+                <View style={styles.header}>
+                  <Text
+                    style={[styles.name, { color: theme.text }]}
+                    numberOfLines={2}
+                  >
+                    {event.name}
+                  </Text>
+                  <View style={styles.subscribers}>
+                    <SymbolView
+                      name={{
+                        ios: "person",
+                        android: "person",
+                        web: "person",
+                      }}
+                      size={10}
+                      tintColor={theme.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.subscribersText,
+                        { color: theme.textSecondary },
+                      ]}
+                    >
+                      {event.nbr_subscribers}
+                    </Text>
+                  </View>
+                </View>
                 <Text
                   style={[styles.meta, { color: theme.textSecondary }]}
                   numberOfLines={1}
                 >
-                  {[
-                    formatKind(event.kind),
-                    location,
-                    `${event.nbr_subscribers} subscribed`,
-                  ]
+                  {[formatKind(event.kind), location]
                     .filter(Boolean)
                     .join(" · ")}
                 </Text>
@@ -115,9 +133,25 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.sm,
+  },
   name: {
+    flex: 1,
     fontSize: 15,
     fontWeight: "500",
+  },
+  subscribers: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingTop: 2,
+  },
+  subscribersText: {
+    fontSize: 10,
+    fontVariant: ["tabular-nums"],
   },
   meta: {
     fontSize: 13,
