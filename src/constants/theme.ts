@@ -7,6 +7,8 @@ export const Colors = {
     border: "#E0E1E6",
     track: "#E6E8EB",
     accent: "#ff976e",
+    /** Text and icons drawn on top of `accent` or other strong colors. */
+    onAccent: "#FFFFFF",
     success: "#2E9E5B",
     danger: "#D8404F",
     dangerBackground: "#FDECEE",
@@ -19,13 +21,12 @@ export const Colors = {
     border: "#2E3135",
     track: "#2E3135",
     accent: "#00BABC",
+    onAccent: "#FFFFFF",
     success: "#4CC38A",
     danger: "#F2555A",
     dangerBackground: "#3B1219",
   },
 } as const;
-
-export type ThemeColors = (typeof Colors)[keyof typeof Colors];
 
 export const Spacing = {
   xs: 4,

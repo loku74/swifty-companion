@@ -5,7 +5,8 @@ import { Card } from "@/components/card";
 import { ProgressBar } from "@/components/progress-bar";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { CursusUser, User } from "@/lib/ft-api";
+import type { CursusUser, User } from "@/lib/api";
+import { splitLevel } from "@/lib/level";
 
 const AVATAR_SIZE = 104;
 
@@ -17,7 +18,7 @@ type ProfileHeaderProps = {
 export function ProfileHeader({ user, cursus }: ProfileHeaderProps) {
   const theme = useTheme();
   const avatar = user.image?.versions?.medium ?? user.image?.link;
-  const level = cursus?.level ?? 0;
+  const { level, progress, percent } = splitLevel(cursus?.level ?? 0);
 
   return (
     <Card style={styles.card}>
@@ -61,13 +62,13 @@ export function ProfileHeader({ user, cursus }: ProfileHeaderProps) {
         <View style={styles.level}>
           <View style={styles.levelLabels}>
             <Text style={[styles.levelText, { color: theme.text }]}>
-              Level {Math.floor(level)}
+              Level {level}
             </Text>
             <Text style={[styles.levelText, { color: theme.textSecondary }]}>
-              {Math.round((level % 1) * 100)}%
+              {percent}%
             </Text>
           </View>
-          <ProgressBar progress={level % 1} height={10} />
+          <ProgressBar progress={progress} height={10} />
         </View>
       ) : null}
     </Card>

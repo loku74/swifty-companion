@@ -1,4 +1,5 @@
 import { Stack, useLocalSearchParams } from "expo-router";
+import maxBy from "lodash/maxBy";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -10,8 +11,8 @@ import {
 
 import { ErrorMessage } from "@/components/error-message";
 import { CursusPicker } from "@/components/profile/cursus-picker";
-import { DetailsGrid } from "@/components/profile/details-grid";
 import { EventsList } from "@/components/profile/events-list";
+import { ProfileDetails } from "@/components/profile/profile-details";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import {
   getCompletedProjects,
@@ -22,13 +23,13 @@ import { SegmentedTabs } from "@/components/segmented-tabs";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "@/hooks/use-user";
-import type { CursusUser } from "@/lib/ft-api";
+import type { CursusUser } from "@/lib/api";
 
 /** Prefers the main 42 cursus, otherwise the most recently started one. */
 function getDefaultCursus(cursusUsers: CursusUser[]) {
   return (
     cursusUsers.find((cursusUser) => cursusUser.cursus.slug === "42cursus") ??
-    [...cursusUsers].sort((a, b) => b.begin_at.localeCompare(a.begin_at))[0]
+    maxBy(cursusUsers, "begin_at")
   );
 }
 
@@ -87,7 +88,7 @@ export default function ProfileScreen() {
                 onSelect={setSelectedCursusId}
               />
             ) : null}
-            <DetailsGrid user={user} />
+            <ProfileDetails user={user} />
             <SegmentedTabs
               tabs={[
                 { key: "projects", label: "Projects", count: projects.length },

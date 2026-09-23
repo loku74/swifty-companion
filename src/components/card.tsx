@@ -5,17 +5,9 @@ import { useTheme } from "@/hooks/use-theme";
 
 type CardProps = ViewProps & {
   title?: string;
-  /** Rendered on the right of the title. */
-  accessory?: React.ReactNode;
 };
 
-export function Card({
-  title,
-  accessory,
-  style,
-  children,
-  ...rest
-}: CardProps) {
+export function Card({ title, style, children, ...rest }: CardProps) {
   const theme = useTheme();
 
   return (
@@ -24,10 +16,7 @@ export function Card({
       {...rest}
     >
       {title ? (
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-          {accessory}
-        </View>
+        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
       ) : null}
       {children}
     </View>
@@ -40,12 +29,6 @@ const styles = StyleSheet.create({
     borderCurve: "continuous",
     padding: Spacing.lg,
     gap: Spacing.md,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: Spacing.sm,
   },
   title: {
     fontSize: 20,

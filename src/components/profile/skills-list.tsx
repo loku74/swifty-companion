@@ -1,24 +1,25 @@
+import orderBy from "lodash/orderBy";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/card";
+import { EmptyState } from "@/components/empty-state";
 import { ProgressBar } from "@/components/progress-bar";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { Skill } from "@/lib/ft-api";
+import type { Skill } from "@/lib/api";
+import { splitLevel } from "@/lib/level";
 
 export function SkillsList({ skills }: { skills: Skill[] }) {
   const theme = useTheme();
-  const sorted = [...skills].sort((a, b) => b.level - a.level);
+  const sorted = orderBy(skills, "level", "desc");
 
   return (
     <Card>
       {sorted.length === 0 ? (
-        <Text style={{ color: theme.textSecondary }}>
-          No skills yet for this cursus.
-        </Text>
+        <EmptyState>No skills yet for this cursus.</EmptyState>
       ) : (
         sorted.map((skill) => {
-          const percent = Math.round((skill.level % 1) * 100);
+          const { level, progress, percent } = splitLevel(skill.level);
           return (
             <View key={skill.id} style={styles.skill}>
               <View style={styles.row}>
@@ -29,10 +30,10 @@ export function SkillsList({ skills }: { skills: Skill[] }) {
                   {skill.name}
                 </Text>
                 <Text style={[styles.level, { color: theme.textSecondary }]}>
-                  Level {Math.floor(skill.level)} · {percent}%
+                  Level {level} · {percent}%
                 </Text>
               </View>
-              <ProgressBar progress={skill.level % 1} />
+              <ProgressBar progress={progress} />
             </View>
           );
         })

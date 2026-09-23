@@ -2,7 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { CursusUser } from "@/lib/ft-api";
+import type { CursusUser } from "@/lib/api";
 
 type CursusPickerProps = {
   cursusUsers: CursusUser[];
@@ -39,7 +39,7 @@ export function CursusPicker({
             <Text
               style={[
                 styles.label,
-                { color: selected ? "#FFFFFF" : theme.text },
+                { color: selected ? theme.onAccent : theme.text },
               ]}
             >
               {cursus.name}

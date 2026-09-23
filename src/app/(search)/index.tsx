@@ -1,5 +1,7 @@
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import take from "lodash/take";
+import uniq from "lodash/uniq";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,19 +14,22 @@ import {
 } from "react-native";
 
 import { ErrorMessage } from "@/components/error-message";
+import { PressableOpacity } from "@/components/pressable-opacity";
 import { MaxContentWidth, Radius, Spacing } from "@/constants/theme";
+import { useSeparator } from "@/hooks/use-separator";
 import { useTheme } from "@/hooks/use-theme";
 import {
   type ApiError,
   fetchUser,
   normalizeLogin,
   toApiError,
-} from "@/lib/ft-api";
+} from "@/lib/api";
 
 const MAX_RECENT = 5;
 
 export default function SearchScreen() {
   const theme = useTheme();
+  const separator = useSeparator();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -47,12 +52,7 @@ export default function SearchScreen() {
     try {
       // Fetch first so a missing login is reported here, on the search view.
       await fetchUser(login);
-      setRecent((previous) =>
-        [login, ...previous.filter((item) => item !== login)].slice(
-          0,
-          MAX_RECENT,
-        ),
-      );
+      setRecent((previous) => take(uniq([login, ...previous]), MAX_RECENT));
       router.push({ pathname: "/user/[login]", params: { login } });
     } catch (e) {
       setError(toApiError(e));
@@ -110,7 +110,7 @@ export default function SearchScreen() {
             accessibilityLabel="Student login"
           />
           {query.length > 0 && !loading ? (
-            <Pressable
+            <PressableOpacity
               onPress={() => {
                 setQuery("");
                 setError(null);
@@ -128,7 +128,7 @@ export default function SearchScreen() {
                 size={18}
                 tintColor={theme.textSecondary}
               />
-            </Pressable>
+            </PressableOpacity>
           ) : null}
         </View>
         <Pressable
@@ -146,10 +146,12 @@ export default function SearchScreen() {
           ]}
         >
           {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={theme.onAccent} />
           ) : (
             <>
-              <Text style={styles.buttonLabel}>Search</Text>
+              <Text style={[styles.buttonLabel, { color: theme.onAccent }]}>
+                Search
+              </Text>
               <SymbolView
                 name={{
                   ios: "arrow.right",
@@ -157,7 +159,7 @@ export default function SearchScreen() {
                   web: "arrow_forward",
                 }}
                 size={16}
-                tintColor="#FFFFFF"
+                tintColor={theme.onAccent}
               />
             </>
           )}
@@ -184,10 +186,7 @@ export default function SearchScreen() {
                 accessibilityRole="button"
                 style={({ pressed }) => [
                   styles.recentItem,
-                  index > 0 && {
-                    borderTopWidth: StyleSheet.hairlineWidth,
-                    borderTopColor: theme.border,
-                  },
+                  index > 0 && separator,
                   pressed && { backgroundColor: theme.track },
                 ]}
               >
@@ -248,7 +247,6 @@ const styles = StyleSheet.create({
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)",
   },
   buttonLabel: {
-    color: "#FFFFFF",
     fontSize: 17,
     fontWeight: "600",
   },

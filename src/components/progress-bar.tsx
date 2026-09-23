@@ -1,3 +1,4 @@
+import clamp from "lodash/clamp";
 import { StyleSheet, View } from "react-native";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -11,7 +12,7 @@ type ProgressBarProps = {
 
 export function ProgressBar({ progress, color, height = 6 }: ProgressBarProps) {
   const theme = useTheme();
-  const clamped = Math.min(Math.max(progress, 0), 1);
+  const clamped = clamp(progress, 0, 1);
 
   return (
     <View

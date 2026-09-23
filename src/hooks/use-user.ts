@@ -6,7 +6,7 @@ import {
   getCachedUser,
   toApiError,
   type User,
-} from "@/lib/ft-api";
+} from "@/lib/api";
 
 type UserState =
   | { status: "loading"; user?: undefined; error?: undefined }
@@ -26,7 +26,6 @@ export function useUser(login: string) {
 
   useEffect(() => {
     if (getCachedUser(login)) return;
-    console.log("fetch user ", login);
 
     // The initial state is already 'loading': a profile screen's login never changes.
     let cancelled = false;

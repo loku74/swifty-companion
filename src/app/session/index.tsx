@@ -1,7 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,6 +9,7 @@ import {
 
 import { Card } from "@/components/card";
 import { ErrorMessage } from "@/components/error-message";
+import { PressableOpacity } from "@/components/pressable-opacity";
 import { MaxContentWidth, Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
@@ -21,7 +21,7 @@ import {
   hasCredentials,
   subscribeToToken,
   toApiError,
-} from "@/lib/ft-api";
+} from "@/lib/api";
 
 function formatDuration(ms: number) {
   if (ms <= 0) return "expired";
@@ -138,16 +138,14 @@ function ActionButton({
   const inactive = disabled || loading;
 
   return (
-    <Pressable
+    <PressableOpacity
       onPress={onPress}
       disabled={inactive}
       accessibilityRole="button"
-      style={({ pressed }) => [
+      style={[
         styles.button,
-        {
-          backgroundColor: theme.background,
-          opacity: inactive ? 0.5 : pressed ? 0.7 : 1,
-        },
+        { backgroundColor: theme.background },
+        inactive && styles.inactive,
       ]}
     >
       {loading ? (
@@ -157,7 +155,7 @@ function ActionButton({
           {label}
         </Text>
       )}
-    </Pressable>
+    </PressableOpacity>
   );
 }
 
@@ -194,6 +192,9 @@ const styles = StyleSheet.create({
     borderCurve: "continuous",
     alignItems: "center",
     justifyContent: "center",
+  },
+  inactive: {
+    opacity: 0.5,
   },
   buttonLabel: {
     fontSize: 16,

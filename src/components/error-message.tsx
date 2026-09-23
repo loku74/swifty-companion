@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import { PressableOpacity } from "@/components/pressable-opacity";
 import { Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { ApiError, ApiErrorKind } from "@/lib/ft-api";
+import type { ApiError, ApiErrorKind } from "@/lib/api";
 
 const TITLES: Record<ApiErrorKind, string> = {
   "invalid-login": "Invalid login",
@@ -46,18 +47,15 @@ export function ErrorMessage({ error, onRetry }: ErrorMessageProps) {
         {error.message}
       </Text>
       {canRetry ? (
-        <Pressable
+        <PressableOpacity
           onPress={onRetry}
           accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.retry,
-            { borderColor: theme.danger, opacity: pressed ? 0.6 : 1 },
-          ]}
+          style={[styles.retry, { borderColor: theme.danger }]}
         >
           <Text style={[styles.retryLabel, { color: theme.danger }]}>
             Try again
           </Text>
-        </Pressable>
+        </PressableOpacity>
       ) : null}
     </View>
   );

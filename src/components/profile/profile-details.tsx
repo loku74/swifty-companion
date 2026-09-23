@@ -1,12 +1,13 @@
 import * as Clipboard from "expo-clipboard";
 import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/card";
+import { PressableOpacity } from "@/components/pressable-opacity";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { User } from "@/lib/ft-api";
+import type { User } from "@/lib/api";
 
 type Stat = { label: string; value: string };
 
@@ -80,7 +81,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   }, [copied]);
 
   return (
-    <Pressable
+    <PressableOpacity
       onPress={async () => {
         await Clipboard.setStringAsync(value);
         setCopied(true);
@@ -88,7 +89,6 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={copied ? `${label} copied` : `Copy ${label}`}
-      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
     >
       <SymbolView
         name={
@@ -103,11 +103,11 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         size={16}
         tintColor={copied ? theme.success : theme.accent}
       />
-    </Pressable>
+    </PressableOpacity>
   );
 }
 
-export function DetailsGrid({ user }: { user: User }) {
+export function ProfileDetails({ user }: { user: User }) {
   const theme = useTheme();
 
   return (

@@ -1,26 +1,28 @@
+import lowerCase from "lodash/lowerCase";
+import upperFirst from "lodash/upperFirst";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/card";
+import { EmptyState } from "@/components/empty-state";
 import { Radius, Spacing } from "@/constants/theme";
+import { useSeparator } from "@/hooks/use-separator";
 import { useTheme } from "@/hooks/use-theme";
-import type { FtEvent } from "@/lib/ft-api";
+import type { FtEvent } from "@/lib/api";
 
 /** "meet_up" → "Meet up" */
 function formatKind(kind: string) {
-  const words = kind.replace(/_/g, " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  return upperFirst(lowerCase(kind));
 }
 
 export function EventsList({ events }: { events: FtEvent[] }) {
   const theme = useTheme();
+  const separator = useSeparator();
   const now = new Date().toISOString();
 
   return (
     <Card>
       {events.length === 0 ? (
-        <Text style={{ color: theme.textSecondary }}>
-          No event subscriptions yet.
-        </Text>
+        <EmptyState>No event subscriptions yet.</EmptyState>
       ) : (
         events.map((event, index) => {
           const date = new Date(event.begin_at);
@@ -29,14 +31,7 @@ export function EventsList({ events }: { events: FtEvent[] }) {
           return (
             <View
               key={event.id}
-              style={[
-                styles.row,
-                index > 0 && {
-                  paddingTop: Spacing.md,
-                  borderTopWidth: StyleSheet.hairlineWidth,
-                  borderTopColor: theme.border,
-                },
-              ]}
+              style={[styles.row, index > 0 && [separator, styles.nextRow]]}
               accessible
               accessibilityLabel={`${event.name}, ${date.toLocaleDateString()}${upcoming ? ", upcoming" : ""}`}
             >
@@ -91,6 +86,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.md,
+  },
+  nextRow: {
+    paddingTop: Spacing.md,
   },
   date: {
     width: 52,
