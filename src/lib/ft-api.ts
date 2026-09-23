@@ -136,7 +136,6 @@ async function requestToken(): Promise<Token> {
 
 /**
  * Returns the cached token, or creates a new one if it is missing or expired.
- * Concurrent callers share the same in-flight token request.
  */
 export async function getToken(): Promise<Token> {
   if (isTokenValid(token)) return token;
