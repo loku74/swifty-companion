@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (42 API credentials live here — never commit them)
+.env
 .env*.local
 
 # typescript
