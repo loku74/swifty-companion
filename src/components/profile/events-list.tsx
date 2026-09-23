@@ -1,0 +1,131 @@
+import { StyleSheet, Text, View } from "react-native";
+
+import { Card } from "@/components/card";
+import { Radius, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
+import type { FtEvent } from "@/lib/ft-api";
+
+/** "meet_up" → "Meet up" */
+function formatKind(kind: string) {
+  const words = kind.replace(/_/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+export function EventsList({ events }: { events: FtEvent[] }) {
+  const theme = useTheme();
+  const now = new Date().toISOString();
+
+  return (
+    <Card>
+      {events.length === 0 ? (
+        <Text style={{ color: theme.textSecondary }}>
+          No event subscriptions yet.
+        </Text>
+      ) : (
+        events.map((event, index) => {
+          const date = new Date(event.begin_at);
+          const upcoming = event.begin_at > now;
+          const location = event.location.trim();
+          return (
+            <View
+              key={event.id}
+              style={[
+                styles.row,
+                index > 0 && {
+                  paddingTop: Spacing.md,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: theme.border,
+                },
+              ]}
+              accessible
+              accessibilityLabel={`${event.name}, ${date.toLocaleDateString()}${upcoming ? ", upcoming" : ""}`}
+            >
+              <View
+                style={[styles.date, { backgroundColor: theme.background }]}
+              >
+                <Text style={[styles.day, { color: theme.text }]}>
+                  {date.getDate()}
+                </Text>
+                <Text style={[styles.month, { color: theme.textSecondary }]}>
+                  {date.toLocaleDateString(undefined, { month: "short" })}
+                </Text>
+                <Text style={[styles.year, { color: theme.textSecondary }]}>
+                  {date.getFullYear()}
+                </Text>
+              </View>
+              <View style={styles.info}>
+                <Text
+                  style={[styles.name, { color: theme.text }]}
+                  numberOfLines={2}
+                >
+                  {event.name}
+                </Text>
+                <Text
+                  style={[styles.meta, { color: theme.textSecondary }]}
+                  numberOfLines={1}
+                >
+                  {[
+                    formatKind(event.kind),
+                    location,
+                    `${event.nbr_subscribers} subscribed`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Text>
+                {upcoming ? (
+                  <Text style={[styles.upcoming, { color: theme.accent }]}>
+                    Upcoming
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          );
+        })
+      )}
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  date: {
+    width: 52,
+    alignItems: "center",
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
+    borderCurve: "continuous",
+  },
+  day: {
+    fontSize: 18,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  month: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  year: {
+    fontSize: 11,
+    fontVariant: ["tabular-nums"],
+  },
+  info: {
+    flex: 1,
+    gap: 2,
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  meta: {
+    fontSize: 13,
+  },
+  upcoming: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+});

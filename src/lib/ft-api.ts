@@ -286,6 +286,8 @@ export type User = {
   campus: { id: number; name: string }[];
   cursus_users: CursusUser[];
   projects_users: ProjectUser[];
+  /** Not part of the API's user object: fetched separately by `fetchUser`. */
+  events: FtEvent[];
 };
 
 const LOGIN_PATTERN = /^[a-z][a-z0-9_-]*$/;
@@ -311,11 +313,16 @@ export function getCachedUser(login: string) {
   return userCache.get(login);
 }
 
+/** Fetches a user's profile and their events, in parallel. */
 export async function fetchUser(login: string): Promise<User> {
   try {
-    const user = await apiGet<User>(`/v2/users/${encodeURIComponent(login)}`);
-    userCache.set(login, user);
-    return user;
+    const [user, events] = await Promise.all([
+      apiGet<Omit<User, "events">>(`/v2/users/${encodeURIComponent(login)}`),
+      fetchUserEvents(login),
+    ]);
+    const fullUser = { ...user, events };
+    userCache.set(login, fullUser);
+    return fullUser;
   } catch (error) {
     if (error instanceof ApiError && error.kind === "not-found") {
       throw new ApiError(
@@ -325,4 +332,44 @@ export async function fetchUser(login: string): Promise<User> {
     }
     throw error;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+export type FtEvent = {
+  id: number;
+  name: string;
+  description: string;
+  kind: string;
+  location: string;
+  begin_at: string;
+  end_at: string;
+  max_people: number | null;
+  nbr_subscribers: number;
+  prohibition_of_cancellation: number | null;
+  campus_ids: number[];
+  cursus_ids: number[];
+  themes: { id: number; name: string }[];
+  waitlist: { id: number; waitlistable_id: number } | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** The largest page the 42 API allows. */
+const MAX_PAGE_SIZE = 100;
+
+/** Events the user subscribed to, most recent first. */
+async function fetchUserEvents(login: string): Promise<FtEvent[]> {
+  const events: FtEvent[] = [];
+  for (let page = 1; ; page++) {
+    // `page[size]` and `page[number]`, with the brackets percent-encoded.
+    const batch = await apiGet<FtEvent[]>(
+      `/v2/users/${encodeURIComponent(login)}/events?page%5Bsize%5D=${MAX_PAGE_SIZE}&page%5Bnumber%5D=${page}`,
+    );
+    events.push(...batch);
+    if (batch.length < MAX_PAGE_SIZE) break;
+  }
+  return events.sort((a, b) => b.begin_at.localeCompare(a.begin_at));
 }

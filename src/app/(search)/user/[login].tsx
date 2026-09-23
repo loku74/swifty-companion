@@ -11,12 +11,14 @@ import {
 import { ErrorMessage } from "@/components/error-message";
 import { CursusPicker } from "@/components/profile/cursus-picker";
 import { DetailsGrid } from "@/components/profile/details-grid";
+import { EventsList } from "@/components/profile/events-list";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import {
   getCompletedProjects,
   ProjectsList,
 } from "@/components/profile/projects-list";
 import { SkillsList } from "@/components/profile/skills-list";
+import { SegmentedTabs } from "@/components/segmented-tabs";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "@/hooks/use-user";
@@ -30,17 +32,23 @@ function getDefaultCursus(cursusUsers: CursusUser[]) {
   );
 }
 
+type Section = "projects" | "skills" | "events";
+
 export default function ProfileScreen() {
   const theme = useTheme();
   const { login } = useLocalSearchParams<{ login: string }>();
   const { status, user, error, refreshing, refresh } = useUser(login);
   const [selectedCursusId, setSelectedCursusId] = useState<number>();
+  const [section, setSection] = useState<Section>("projects");
 
   const cursus = user
     ? (user.cursus_users.find(
         (cursusUser) => cursusUser.cursus_id === selectedCursusId,
       ) ?? getDefaultCursus(user.cursus_users))
     : undefined;
+  const projects = user
+    ? getCompletedProjects(user.projects_users, cursus?.cursus_id)
+    : [];
 
   return (
     <>
@@ -80,13 +88,30 @@ export default function ProfileScreen() {
               />
             ) : null}
             <DetailsGrid user={user} />
-            <SkillsList skills={cursus?.skills ?? []} />
-            <ProjectsList
-              projects={getCompletedProjects(
-                user.projects_users,
-                cursus?.cursus_id,
-              )}
+            <SegmentedTabs
+              tabs={[
+                { key: "projects", label: "Projects", count: projects.length },
+                {
+                  key: "skills",
+                  label: "Skills",
+                  count: cursus?.skills.length ?? 0,
+                },
+                {
+                  key: "events",
+                  label: "Events",
+                  count: user.events.length,
+                },
+              ]}
+              selected={section}
+              onSelect={setSection}
             />
+            {section === "projects" ? (
+              <ProjectsList projects={projects} />
+            ) : null}
+            {section === "skills" ? (
+              <SkillsList skills={cursus?.skills ?? []} />
+            ) : null}
+            {section === "events" ? <EventsList events={user.events} /> : null}
           </>
         ) : null}
       </ScrollView>

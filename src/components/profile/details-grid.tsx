@@ -1,34 +1,110 @@
-import { StyleSheet, Text, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { SymbolView, type SymbolViewProps } from "expo-symbols";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/card";
-import { Radius, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { User } from "@/lib/ft-api";
 
-type Detail = { label: string; value: string };
+type Stat = { label: string; value: string };
 
-function getDetails(user: User): Detail[] {
-  const details: Detail[] = [
-    { label: "Email", value: user.email },
-    { label: "Location", value: user.location ?? "Unavailable" },
+type InfoRow = {
+  label: string;
+  icon: SymbolViewProps["name"];
+  value: string | null;
+  /** Shows a button to copy the value. */
+  copyable?: boolean;
+  /** Shows a green dot after the value. */
+  online?: boolean;
+};
+
+function getStats(user: User): Stat[] {
+  const stats: Stat[] = [
     { label: "Wallet", value: `${user.wallet} ₳` },
-    { label: "Evaluation points", value: String(user.correction_point) },
+    { label: "Eval points", value: String(user.correction_point) },
   ];
-
-  // The API returns "hidden" when the student chose not to share their number.
-  if (user.phone && user.phone !== "hidden") {
-    details.push({ label: "Mobile", value: user.phone });
+  if (user.pool_year) {
+    stats.push({ label: "Pool", value: user.pool_year });
   }
+  return stats;
+}
+
+function getInfoRows(user: User): InfoRow[] {
+  const rows: InfoRow[] = [
+    {
+      label: "Email",
+      icon: { ios: "envelope", android: "mail", web: "mail" },
+      value: user.email,
+      copyable: true,
+    },
+    {
+      label: "Location",
+      icon: { ios: "desktopcomputer", android: "computer", web: "computer" },
+      value: user.location,
+      // The API only sets a location while the student is logged in on a
+      // campus computer.
+      online: user.location !== null,
+    },
+  ];
   if (user.campus.length > 0) {
-    details.push({
+    rows.push({
       label: "Campus",
+      icon: { ios: "building.2", android: "apartment", web: "apartment" },
       value: user.campus.map((campus) => campus.name).join(", "),
     });
   }
-  if (user.pool_year) {
-    details.push({ label: "Pool year", value: user.pool_year });
+  // The API returns "hidden" when the student chose not to share their number.
+  if (user.phone && user.phone !== "hidden") {
+    rows.push({
+      label: "Mobile",
+      icon: { ios: "phone", android: "call", web: "call" },
+      value: user.phone,
+    });
   }
-  return details;
+  return rows;
+}
+
+/** How long the checkmark stays visible after copying. */
+const COPIED_FEEDBACK_MS = 1500;
+
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const theme = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  return (
+    <Pressable
+      onPress={async () => {
+        await Clipboard.setStringAsync(value);
+        setCopied(true);
+      }}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel={copied ? `${label} copied` : `Copy ${label}`}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+    >
+      <SymbolView
+        name={
+          copied
+            ? { ios: "checkmark", android: "check", web: "check" }
+            : {
+                ios: "doc.on.doc",
+                android: "content_copy",
+                web: "content_copy",
+              }
+        }
+        size={16}
+        tintColor={copied ? theme.success : theme.accent}
+      />
+    </Pressable>
+  );
 }
 
 export function DetailsGrid({ user }: { user: User }) {
@@ -36,22 +112,54 @@ export function DetailsGrid({ user }: { user: User }) {
 
   return (
     <Card title="Details">
-      <View style={styles.grid}>
-        {getDetails(user).map((detail) => (
+      <View style={styles.stats}>
+        {getStats(user).map((stat) => (
+          <View key={stat.label} style={styles.stat}>
+            <Text style={[styles.statValue, { color: theme.text }]}>
+              {stat.value}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              {stat.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+      <View style={styles.rows}>
+        {getInfoRows(user).map((row) => (
           <View
-            key={detail.label}
-            style={[styles.cell, { backgroundColor: theme.background }]}
+            key={row.label}
+            style={styles.row}
+            // Grouping the row would hide its copy button from screen readers.
+            accessible={!row.copyable}
+            accessibilityLabel={`${row.label}: ${row.value ?? "unavailable"}${row.online ? ", online" : ""}`}
           >
-            <Text style={[styles.label, { color: theme.textSecondary }]}>
-              {detail.label}
-            </Text>
-            <Text
-              style={[styles.value, { color: theme.text }]}
-              selectable
-              numberOfLines={2}
-            >
-              {detail.value}
-            </Text>
+            <SymbolView
+              name={row.icon}
+              size={17}
+              tintColor={theme.textSecondary}
+            />
+            <View style={styles.valueContainer}>
+              <Text
+                style={[
+                  styles.value,
+                  { color: row.value ? theme.text : theme.textSecondary },
+                ]}
+                selectable
+              >
+                {row.value ?? "Unavailable"}
+              </Text>
+              {row.online ? (
+                <View
+                  style={[styles.onlineDot, { backgroundColor: theme.success }]}
+                />
+              ) : null}
+            </View>
+            {row.copyable && row.value ? (
+              <CopyButton value={row.value} label={row.label.toLowerCase()} />
+            ) : null}
           </View>
         ))}
       </View>
@@ -60,25 +168,46 @@ export function DetailsGrid({ user }: { user: User }) {
 }
 
 const styles = StyleSheet.create({
-  grid: {
+  stats: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: Spacing.sm,
   },
-  cell: {
-    // Two columns on phones, more on wider screens.
-    flexGrow: 1,
-    flexBasis: 140,
-    padding: Spacing.md,
-    borderRadius: Radius.md,
-    borderCurve: "continuous",
+  stat: {
+    flex: 1,
+    alignItems: "center",
     gap: 2,
   },
-  label: {
-    fontSize: 13,
+  statValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  statLabel: {
+    fontSize: 12,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+  },
+  rows: {
+    gap: Spacing.md,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  valueContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
   },
   value: {
-    fontSize: 16,
-    fontWeight: "600",
+    flexShrink: 1,
+    fontSize: 15,
+  },
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

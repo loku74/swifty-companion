@@ -11,7 +11,7 @@ export function SkillsList({ skills }: { skills: Skill[] }) {
   const sorted = [...skills].sort((a, b) => b.level - a.level);
 
   return (
-    <Card title="Skills">
+    <Card>
       {sorted.length === 0 ? (
         <Text style={{ color: theme.textSecondary }}>
           No skills yet for this cursus.
