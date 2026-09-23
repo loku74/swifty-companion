@@ -64,7 +64,7 @@ const tokenListeners = new Set<() => void>();
 
 function setToken(next: Token | null) {
   token = next;
-  tokenListeners.forEach((listener) => listener());
+  for (const listener of tokenListeners) listener();
 }
 
 /** For `useSyncExternalStore`. */

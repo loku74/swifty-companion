@@ -6,7 +6,7 @@ export const Colors = {
     card: "#FFFFFF",
     border: "#E0E1E6",
     track: "#E6E8EB",
-    accent: "#ffae00",
+    accent: "#ff976e",
     success: "#2E9E5B",
     danger: "#D8404F",
     dangerBackground: "#FDECEE",
