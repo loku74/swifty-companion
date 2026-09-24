@@ -7,7 +7,6 @@ export const Colors = {
     border: "#E0E1E6",
     track: "#E6E8EB",
     accent: "#ff976e",
-    /** Text and icons drawn on top of `accent` or other strong colors. */
     onAccent: "#FFFFFF",
     success: "#2E9E5B",
     danger: "#D8404F",
