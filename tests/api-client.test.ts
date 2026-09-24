@@ -1,14 +1,24 @@
-import type { apiGet as ApiGet } from "@/lib/api/client";
+import type {
+  apiGet as ApiGet,
+  checkToken as CheckToken,
+} from "@/lib/api/client";
 import type { ApiError } from "@/lib/api/errors";
+import type { corruptToken as CorruptToken } from "@/lib/api/token";
 
 function json(status: number, body: unknown, headers?: Record<string, string>) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
 const tokenResponse = (accessToken: string) =>
-  json(200, { access_token: accessToken, expires_in: 7200 });
+  json(200, {
+    access_token: accessToken,
+    expires_in: 7200,
+    created_at: 1_790_000_000,
+  });
 
 let apiGet: typeof ApiGet;
+let checkToken: typeof CheckToken;
+let corruptToken: typeof CorruptToken;
 const fetchMock = jest.fn<Promise<Response>, [string, RequestInit]>();
 
 beforeEach(() => {
@@ -18,7 +28,8 @@ beforeEach(() => {
   globalThis.fetch = fetchMock as unknown as typeof fetch;
   // Fresh module state (cached token) for every test.
   jest.isolateModules(() => {
-    apiGet = require("@/lib/api/client").apiGet;
+    ({ apiGet, checkToken } = require("@/lib/api/client"));
+    ({ corruptToken } = require("@/lib/api/token"));
   });
 });
 
@@ -87,4 +98,21 @@ it("maps a 404 to a not-found error", async () => {
   await expect(apiGet("/users/nobody")).rejects.toMatchObject<
     Partial<ApiError>
   >({ kind: "not-found" });
+});
+
+it("replaces a revoked token when checking it", async () => {
+  fetchMock
+    .mockResolvedValueOnce(tokenResponse("t1"))
+    .mockResolvedValueOnce(json(200, {}))
+    .mockResolvedValueOnce(json(401, {}))
+    .mockResolvedValueOnce(tokenResponse("t1"))
+    .mockResolvedValueOnce(json(200, {}));
+
+  await checkToken();
+  corruptToken();
+  await checkToken();
+
+  expect(authorizationOf(2)).toBe("Bearer revoked-token");
+  expect(fetchMock.mock.calls[3][0]).toMatch(/\/oauth\/token$/);
+  expect(authorizationOf(4)).toBe("Bearer t1");
 });

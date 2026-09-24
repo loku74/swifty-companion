@@ -14,10 +14,10 @@ import { MaxContentWidth, Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
   type ApiError,
+  checkToken,
   corruptToken,
   expireTokenNow,
   getCurrentToken,
-  getToken,
   hasCredentials,
   subscribeToToken,
   toApiError,
@@ -56,7 +56,7 @@ export default function SessionScreen() {
     setLoading(true);
     setError(null);
     try {
-      await getToken();
+      await checkToken();
     } catch (e) {
       setError(toApiError(e));
     } finally {
@@ -68,6 +68,10 @@ export default function SessionScreen() {
     ["Credentials", hasCredentials() ? "Loaded from .env" : "Missing"],
     ["Access token", token ? `${token.accessToken.slice(0, 8)}…` : "None yet"],
     ["Created", token ? new Date(token.createdAt).toLocaleTimeString() : "–"],
+    [
+      "Last fetched",
+      token ? new Date(token.fetchedAt).toLocaleTimeString() : "–",
+    ],
     ["Expires in", token ? formatDuration(token.expiresAt - now) : "–"],
   ];
 
@@ -98,8 +102,8 @@ export default function SessionScreen() {
 
       <Card title="Test token renewal">
         <Text style={{ color: theme.textSecondary }}>
-          Break the current token, then search for a login: the app gets a new
-          token without showing an error.
+          Break the current token, then press Get token or search for a login:
+          the app gets a new token without showing an error.
         </Text>
         <ActionButton
           label="Get token"

@@ -16,8 +16,14 @@ const EXPIRY_MARGIN_MS = 30_000;
 
 export type Token = {
   accessToken: string;
-  /** Epoch ms, as measured by this device. */
+  /**
+   * Epoch ms, as reported by the API. The API hands back the same token until
+   * it expires, so this doesn't change when the app re-requests it.
+   */
   createdAt: number;
+  /** Epoch ms when this device last received the token. */
+  fetchedAt: number;
+  /** Epoch ms, as measured by this device. */
   expiresAt: number;
 };
 
@@ -87,13 +93,14 @@ async function requestToken(): Promise<Token> {
   }
   await throwForStatus(response);
 
-  const body: { access_token: string; expires_in: number } =
+  const body: { access_token: string; expires_in: number; created_at: number } =
     await response.json();
   const now = Date.now();
   return {
     accessToken: body.access_token,
-    createdAt: now,
-    expiresAt: now + body.expires_in * 1000,
+    createdAt: body.created_at * 1_000,
+    fetchedAt: now,
+    expiresAt: now + body.expires_in * 1_000,
   };
 }
 
