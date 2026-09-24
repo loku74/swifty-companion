@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   levelText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
   },

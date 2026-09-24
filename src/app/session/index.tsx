@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   intro: {
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 22,
   },
   row: {
     flexDirection: "row",
@@ -174,17 +174,17 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   label: {
-    fontSize: 15,
+    fontSize: 14,
   },
   value: {
     flexShrink: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
     textAlign: "right",
   },
   button: {
-    minHeight: 44,
+    minHeight: 48,
     borderRadius: Radius.md,
     borderCurve: "continuous",
     alignItems: "center",

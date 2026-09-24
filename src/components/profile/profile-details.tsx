@@ -9,6 +9,8 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { User } from "@/lib/api";
 
+const UNAVAILABLE = "Unavailable";
+
 type Stat = { label: string; value: string };
 
 type InfoRow = {
@@ -43,7 +45,7 @@ function getInfoRows(user: User): InfoRow[] {
     {
       label: "Location",
       icon: { ios: "desktopcomputer", android: "computer" },
-      value: user.location,
+      value: user.location ?? UNAVAILABLE,
       // The API only sets a location while the student is logged in on a
       // campus computer.
       online: user.location !== null,
@@ -133,22 +135,27 @@ export function ProfileDetails({ user }: { user: User }) {
             style={styles.row}
             // Grouping the row would hide its copy button from screen readers.
             accessible={!row.copyable}
-            accessibilityLabel={`${row.label}: ${row.value ?? "unavailable"}${row.online ? ", online" : ""}`}
+            accessibilityLabel={`${row.label}: ${row.value} ${row.online ? ", online" : ""}`}
           >
             <SymbolView
               name={row.icon}
-              size={17}
+              size={16}
               tintColor={theme.textSecondary}
             />
             <View style={styles.valueContainer}>
               <Text
                 style={[
                   styles.value,
-                  { color: row.value ? theme.text : theme.textSecondary },
+                  {
+                    color:
+                      row.value !== UNAVAILABLE
+                        ? theme.text
+                        : theme.textSecondary,
+                  },
                 ]}
                 selectable
               >
-                {row.value ?? "Unavailable"}
+                {row.value}
               </Text>
               {row.online ? (
                 <View
@@ -201,8 +208,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   value: {
-    flexShrink: 1,
-    fontSize: 15,
+    fontSize: 14,
   },
   onlineDot: {
     width: 8,

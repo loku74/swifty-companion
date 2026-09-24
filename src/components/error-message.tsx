@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   message: {
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 14,
+    lineHeight: 22,
   },
   retry: {
     alignSelf: "flex-start",
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth * 2,
   },
   retryLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
   },
 });

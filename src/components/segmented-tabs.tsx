@@ -66,7 +66,8 @@ export function SegmentedTabs<T extends string>({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    padding: 3,
+    paddingHorizontal: 4,
+    paddingVertical: 3,
     borderRadius: Radius.md,
     borderCurve: "continuous",
   },
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingVertical: Spacing.sm,
-    borderRadius: Radius.md - 3,
+    borderRadius: Radius.md - 4,
     borderCurve: "continuous",
   },
   selected: {

@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   subscribers: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: 2,
     paddingTop: 2,
   },
   subscribersText: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   meta: {
-    fontSize: 13,
+    fontSize: 12,
   },
   upcoming: {
     fontSize: 12,

@@ -13,7 +13,6 @@ import type { ProjectUser } from "@/lib/api";
 
 /** Marks with their own badge color instead of the passed/failed one. */
 const SPECIAL_MARK_COLORS: Record<number, string> = {
-  // Darker than a normal fail, so cheating stands out.
   [-42]: "#8B0A1A",
   125: "#FF75F6",
 };
