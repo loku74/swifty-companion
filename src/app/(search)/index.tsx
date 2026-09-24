@@ -88,7 +88,7 @@ export default function SearchScreen() {
           ]}
         >
           <SymbolView
-            name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+            name={{ ios: "magnifyingglass", android: "search" }}
             size={18}
             tintColor={focused ? theme.accent : theme.textSecondary}
           />
@@ -126,7 +126,6 @@ export default function SearchScreen() {
                 name={{
                   ios: "xmark.circle.fill",
                   android: "cancel",
-                  web: "cancel",
                 }}
                 size={18}
                 tintColor={theme.textSecondary}
@@ -159,7 +158,6 @@ export default function SearchScreen() {
                 name={{
                   ios: "arrow.right",
                   android: "arrow_forward",
-                  web: "arrow_forward",
                 }}
                 size={16}
                 tintColor={theme.onAccent}

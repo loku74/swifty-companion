@@ -78,7 +78,6 @@ export function ProjectsList({ projects }: { projects: ProjectUser[] }) {
                 name={{
                   ios: "arrow.up.arrow.down",
                   android: "swap_vert",
-                  web: "swap_vert",
                 }}
                 size={13}
                 tintColor={theme.accent}

@@ -62,7 +62,6 @@ export function EventsList({ events }: { events: FtEvent[] }) {
                       name={{
                         ios: "person",
                         android: "person",
-                        web: "person",
                       }}
                       size={10}
                       tintColor={theme.textSecondary}
