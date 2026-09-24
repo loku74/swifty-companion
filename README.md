@@ -9,7 +9,7 @@ Built with Expo (SDK 57), Expo Router and TypeScript. Targets iOS and Android.
 ## Features
 
 - **Search** by login, with validation and clear errors (unknown login, network
-  failure, timeout, rate limiting…). The last five searches are saved on the
+  failure, timeout, rate limiting…). The last ten searches are saved on the
   device.
 - **Profile**: avatar, level and progress, contact details, wallet and
   evaluation points, a cursus picker, and tabs for projects (passed or failed),

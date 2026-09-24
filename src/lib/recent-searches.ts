@@ -3,7 +3,7 @@ import take from "lodash/take";
 import uniq from "lodash/uniq";
 
 const STORAGE_KEY = "recent-searches";
-export const MAX_RECENT_SEARCHES = 5;
+export const MAX_RECENT_SEARCHES = 10;
 
 /** Puts `login` first, without duplicates, keeping at most `MAX_RECENT_SEARCHES`. */
 export function addRecentSearch(recent: string[], login: string) {

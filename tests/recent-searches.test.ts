@@ -20,8 +20,14 @@ describe("addRecentSearch", () => {
   });
 
   it(`keeps at most ${MAX_RECENT_SEARCHES} logins`, () => {
-    const recent = ["a", "b", "c", "d", "e"];
-    expect(addRecentSearch(recent, "f")).toEqual(["f", "a", "b", "c", "d"]);
+    const recent = Array.from(
+      { length: MAX_RECENT_SEARCHES },
+      (_, i) => `u${i}`,
+    );
+    expect(addRecentSearch(recent, "new")).toEqual([
+      "new",
+      ...recent.slice(0, -1),
+    ]);
   });
 });
 
