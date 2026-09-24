@@ -1,10 +1,7 @@
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import take from "lodash/take";
-import uniq from "lodash/uniq";
 import { useState } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -24,8 +21,11 @@ import {
   normalizeLogin,
   toApiError,
 } from "@/lib/api";
-
-const MAX_RECENT = 5;
+import {
+  addRecentSearch,
+  loadRecentSearches,
+  saveRecentSearches,
+} from "@/lib/recent-searches";
 
 export default function SearchScreen() {
   const theme = useTheme();
@@ -33,7 +33,7 @@ export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [recent, setRecent] = useState(loadRecentSearches);
   const [focused, setFocused] = useState(false);
 
   async function search(input: string) {
@@ -52,7 +52,9 @@ export default function SearchScreen() {
     try {
       // Fetch first so a missing login is reported here, on the search view.
       await fetchUser(login);
-      setRecent((previous) => take(uniq([login, ...previous]), MAX_RECENT));
+      const nextRecent = addRecentSearch(recent, login);
+      setRecent(nextRecent);
+      saveRecentSearches(nextRecent);
       router.push({ pathname: "/user/[login]", params: { login } });
     } catch (e) {
       setError(toApiError(e));
@@ -60,8 +62,6 @@ export default function SearchScreen() {
       setLoading(false);
     }
   }
-
-  const canSubmit = query.trim().length > 0 && !loading;
 
   return (
     <ScrollView
@@ -85,7 +85,7 @@ export default function SearchScreen() {
           ]}
         >
           <SymbolView
-            name={{ ios: "magnifyingglass", android: "search", web: "search" }}
+            name={{ ios: "magnifyingglass", android: "search" }}
             size={18}
             tintColor={focused ? theme.accent : theme.textSecondary}
           />
@@ -123,7 +123,6 @@ export default function SearchScreen() {
                 name={{
                   ios: "xmark.circle.fill",
                   android: "cancel",
-                  web: "cancel",
                 }}
                 size={18}
                 tintColor={theme.textSecondary}
@@ -131,39 +130,6 @@ export default function SearchScreen() {
             </PressableOpacity>
           ) : null}
         </View>
-        <Pressable
-          onPress={() => search(query)}
-          disabled={!canSubmit}
-          accessibilityRole="button"
-          accessibilityLabel="Search"
-          style={({ pressed }) => [
-            styles.button,
-            {
-              backgroundColor: theme.accent,
-              opacity: canSubmit ? 1 : 0.4,
-              transform: [{ scale: pressed ? 0.96 : 1 }],
-            },
-          ]}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.onAccent} />
-          ) : (
-            <>
-              <Text style={[styles.buttonLabel, { color: theme.onAccent }]}>
-                Search
-              </Text>
-              <SymbolView
-                name={{
-                  ios: "arrow.right",
-                  android: "arrow_forward",
-                  web: "arrow_forward",
-                }}
-                size={16}
-                tintColor={theme.onAccent}
-              />
-            </>
-          )}
-        </Pressable>
       </View>
 
       {error ? (
@@ -223,7 +189,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.sm,
-    minHeight: 50,
+    minHeight: 48,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.lg,
     borderCurve: "continuous",
@@ -232,29 +198,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     alignSelf: "stretch",
-    fontSize: 17,
-  },
-  button: {
-    flexDirection: "row",
-    gap: Spacing.xs + 2,
-    minWidth: 108,
-    minHeight: 50,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: Radius.lg,
-    borderCurve: "continuous",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)",
-  },
-  buttonLabel: {
-    fontSize: 17,
-    fontWeight: "600",
+    fontSize: 16,
   },
   recent: {
     gap: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "500",
     marginLeft: Spacing.lg,
   },

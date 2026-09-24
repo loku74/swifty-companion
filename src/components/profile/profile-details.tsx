@@ -36,13 +36,13 @@ function getInfoRows(user: User): InfoRow[] {
   const rows: InfoRow[] = [
     {
       label: "Email",
-      icon: { ios: "envelope", android: "mail", web: "mail" },
+      icon: { ios: "envelope", android: "mail" },
       value: user.email,
       copyable: true,
     },
     {
       label: "Location",
-      icon: { ios: "desktopcomputer", android: "computer", web: "computer" },
+      icon: { ios: "desktopcomputer", android: "computer" },
       value: user.location,
       // The API only sets a location while the student is logged in on a
       // campus computer.
@@ -52,7 +52,7 @@ function getInfoRows(user: User): InfoRow[] {
   if (user.campus.length > 0) {
     rows.push({
       label: "Campus",
-      icon: { ios: "building.2", android: "apartment", web: "apartment" },
+      icon: { ios: "building.2", android: "apartment" },
       value: user.campus.map((campus) => campus.name).join(", "),
     });
   }
@@ -60,7 +60,7 @@ function getInfoRows(user: User): InfoRow[] {
   if (user.phone && user.phone !== "hidden") {
     rows.push({
       label: "Mobile",
-      icon: { ios: "phone", android: "call", web: "call" },
+      icon: { ios: "phone", android: "call" },
       value: user.phone,
     });
   }
@@ -93,11 +93,10 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       <SymbolView
         name={
           copied
-            ? { ios: "checkmark", android: "check", web: "check" }
+            ? { ios: "checkmark", android: "check" }
             : {
                 ios: "doc.on.doc",
                 android: "content_copy",
-                web: "content_copy",
               }
         }
         size={16}
