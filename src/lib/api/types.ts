@@ -23,7 +23,8 @@ export type ProjectUser = {
   project: { id: number; name: string; slug: string; parent_id: number | null };
 };
 
-export type User = {
+/** `GET /v2/users/:login`. */
+export type ApiUser = {
   id: number;
   login: string;
   email: string;
@@ -44,10 +45,14 @@ export type User = {
   campus: { id: number; name: string }[];
   cursus_users: CursusUser[];
   projects_users: ProjectUser[];
-  /** Not part of the API's user object: fetched separately by `fetchUser`. */
+};
+
+/** A user as the app uses it: their profile plus their events. */
+export type User = ApiUser & {
   events: FtEvent[];
 };
 
+/** An item of `GET /v2/users/:login/events`. */
 export type FtEvent = {
   id: number;
   name: string;

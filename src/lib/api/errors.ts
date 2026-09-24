@@ -9,6 +9,7 @@ export type ApiErrorKind =
   | "server"
   | "unknown";
 
+/** Every error the API layer throws, so screens can show a matching message. */
 export class ApiError extends Error {
   readonly kind: ApiErrorKind;
 
@@ -19,6 +20,7 @@ export class ApiError extends Error {
   }
 }
 
+/** Wraps anything thrown into an `ApiError`, to display it uniformly. */
 export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
   return new ApiError(

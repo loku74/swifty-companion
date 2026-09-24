@@ -6,7 +6,7 @@
  */
 
 import { ApiError } from "./errors";
-import { API_URL, request, throwForStatus } from "./http";
+import { buildUrl, encodeQuery, request, throwForStatus } from "./http";
 
 const CLIENT_ID = process.env.EXPO_PUBLIC_FT_CLIENT_ID;
 const CLIENT_SECRET = process.env.EXPO_PUBLIC_FT_CLIENT_SECRET;
@@ -27,20 +27,30 @@ export type Token = {
   expiresAt: number;
 };
 
+/** Body of a successful `POST /oauth/token`. Times are in seconds. */
+type TokenResponse = {
+  access_token: string;
+  expires_in: number;
+  created_at: number;
+};
+
+// ---------------------------------------------------------------------------
+// Cached token, observable with `useSyncExternalStore`
+// ---------------------------------------------------------------------------
+
 let token: Token | null = null;
 let pendingToken: Promise<Token> | null = null;
-const tokenListeners = new Set<() => void>();
+const listeners = new Set<() => void>();
 
 function setToken(next: Token | null) {
   token = next;
-  for (const listener of tokenListeners) listener();
+  for (const listener of listeners) listener();
 }
 
-/** For `useSyncExternalStore`. */
 export function subscribeToToken(listener: () => void) {
-  tokenListeners.add(listener);
+  listeners.add(listener);
   return () => {
-    tokenListeners.delete(listener);
+    listeners.delete(listener);
   };
 }
 
@@ -48,40 +58,49 @@ export function getCurrentToken() {
   return token;
 }
 
-export function hasCredentials() {
-  return Boolean(CLIENT_ID && CLIENT_SECRET);
-}
-
-function isTokenValid(candidate: Token | null): candidate is Token {
+function isFresh(candidate: Token | null): candidate is Token {
   return (
     candidate !== null && Date.now() < candidate.expiresAt - EXPIRY_MARGIN_MS
   );
 }
 
-function formEncode(values: Record<string, string>) {
-  return Object.entries(values)
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
-    )
-    .join("&");
+// ---------------------------------------------------------------------------
+// Requesting a token
+// ---------------------------------------------------------------------------
+
+export function hasCredentials() {
+  return Boolean(CLIENT_ID && CLIENT_SECRET);
 }
 
-async function requestToken(): Promise<Token> {
+function getCredentials() {
   if (!CLIENT_ID || !CLIENT_SECRET) {
     throw new ApiError(
       "config",
       "Missing 42 API credentials. Copy .env.example to .env, fill in your app UID and secret, then restart the dev server.",
     );
   }
+  return { clientId: CLIENT_ID, clientSecret: CLIENT_SECRET };
+}
 
-  const response = await request(`${API_URL}/oauth/token`, {
+function toToken(body: TokenResponse, now = Date.now()): Token {
+  return {
+    accessToken: body.access_token,
+    createdAt: body.created_at * 1_000,
+    fetchedAt: now,
+    expiresAt: now + body.expires_in * 1_000,
+  };
+}
+
+async function requestToken(): Promise<Token> {
+  const { clientId, clientSecret } = getCredentials();
+
+  const response = await request(buildUrl("/oauth/token"), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: formEncode({
+    body: encodeQuery({
       grant_type: "client_credentials",
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
+      client_id: clientId,
+      client_secret: clientSecret,
     }),
   });
 
@@ -91,24 +110,21 @@ async function requestToken(): Promise<Token> {
       "The 42 API rejected the app credentials. Check .env — the secret may have expired and need to be regenerated on the intra.",
     );
   }
-  await throwForStatus(response);
+  throwForStatus(response);
 
-  const body: { access_token: string; expires_in: number; created_at: number } =
-    await response.json();
-  const now = Date.now();
-  return {
-    accessToken: body.access_token,
-    createdAt: body.created_at * 1_000,
-    fetchedAt: now,
-    expiresAt: now + body.expires_in * 1_000,
-  };
+  return toToken(await response.json());
 }
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 /**
  * Returns the cached token, or creates a new one if it is missing or expired.
+ * Concurrent callers share the same in-flight request.
  */
 export async function getToken(): Promise<Token> {
-  if (isTokenValid(token)) return token;
+  if (isFresh(token)) return token;
 
   pendingToken ??= requestToken()
     .then((next) => {
@@ -127,14 +143,20 @@ export function invalidateToken() {
   setToken(null);
 }
 
-// Debug helpers, used by the Session tab to demonstrate token renewal.
+// ---------------------------------------------------------------------------
+// Debug helpers, used by the Session tab to demonstrate token renewal
+// ---------------------------------------------------------------------------
+
+function patchToken(patch: Partial<Token>) {
+  if (token) setToken({ ...token, ...patch });
+}
 
 /** Marks the cached token as expired without touching the API. */
 export function expireTokenNow() {
-  if (token) setToken({ ...token, expiresAt: Date.now() });
+  patchToken({ expiresAt: Date.now() });
 }
 
 /** Replaces the cached token with a bogus one, as if it had been revoked server-side. */
 export function corruptToken() {
-  if (token) setToken({ ...token, accessToken: "revoked-token" });
+  patchToken({ accessToken: "revoked-token" });
 }

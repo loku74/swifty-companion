@@ -1,8 +1,8 @@
 import orderBy from "lodash/orderBy";
 
-import { apiGet } from "./client";
+import { apiGet, apiGetAll } from "./client";
 import { ApiError } from "./errors";
-import type { FtEvent, User } from "./types";
+import type { ApiUser, FtEvent, User } from "./types";
 
 const LOGIN_PATTERN = /^[a-z][a-z0-9_-]*$/;
 
@@ -27,16 +27,23 @@ export function getCachedUser(login: string) {
   return userCache.get(login);
 }
 
-/** Fetches a user's profile and their events, in parallel. */
+function userPath(login: string) {
+  return `/v2/users/${encodeURIComponent(login)}`;
+}
+
+/** Fetches a user's profile and their events, in parallel, and caches them. */
 export async function fetchUser(login: string): Promise<User> {
   try {
-    const [user, events] = await Promise.all([
-      apiGet<Omit<User, "events">>(`/v2/users/${encodeURIComponent(login)}`),
-      fetchUserEvents(login),
+    const [profile, events] = await Promise.all([
+      apiGet<ApiUser>(userPath(login)),
+      apiGetAll<FtEvent>(`${userPath(login)}/events`),
     ]);
-    const fullUser = { ...user, events };
-    userCache.set(login, fullUser);
-    return fullUser;
+    const user: User = {
+      ...profile,
+      events: orderBy(events, "begin_at", "desc"),
+    };
+    userCache.set(login, user);
+    return user;
   } catch (error) {
     if (error instanceof ApiError && error.kind === "not-found") {
       throw new ApiError(
@@ -46,21 +53,4 @@ export async function fetchUser(login: string): Promise<User> {
     }
     throw error;
   }
-}
-
-/** The largest page the 42 API allows. */
-const MAX_PAGE_SIZE = 100;
-
-/** Events the user subscribed to, most recent first. */
-async function fetchUserEvents(login: string): Promise<FtEvent[]> {
-  const events: FtEvent[] = [];
-  for (let page = 1; ; page++) {
-    // `page[size]` and `page[number]`, with the brackets percent-encoded.
-    const batch = await apiGet<FtEvent[]>(
-      `/v2/users/${encodeURIComponent(login)}/events?page%5Bsize%5D=${MAX_PAGE_SIZE}&page%5Bnumber%5D=${page}`,
-    );
-    events.push(...batch);
-    if (batch.length < MAX_PAGE_SIZE) break;
-  }
-  return orderBy(events, "begin_at", "desc");
 }
