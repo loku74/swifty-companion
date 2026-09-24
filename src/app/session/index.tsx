@@ -10,7 +10,7 @@ import {
 import { Card } from "@/components/card";
 import { ErrorMessage } from "@/components/error-message";
 import { PressableOpacity } from "@/components/pressable-opacity";
-import { MaxContentWidth, Radius, Spacing } from "@/constants/theme";
+import { Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
   type ApiError,
@@ -160,7 +160,6 @@ function ActionButton({
 const styles = StyleSheet.create({
   content: {
     width: "100%",
-    maxWidth: MaxContentWidth,
     alignSelf: "center",
     padding: Spacing.lg,
     gap: Spacing.lg,

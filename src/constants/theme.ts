@@ -41,6 +41,3 @@ export const Radius = {
   md: 12,
   lg: 16,
 } as const;
-
-/** Content is centered and capped at this width on tablets / large screens. */
-export const MaxContentWidth = 720;

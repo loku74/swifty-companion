@@ -20,7 +20,7 @@ import {
 } from "@/components/profile/projects-list";
 import { SkillsList } from "@/components/profile/skills-list";
 import { SegmentedTabs } from "@/components/segmented-tabs";
-import { MaxContentWidth, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "@/hooks/use-user";
 import type { CursusUser } from "@/lib/api";
@@ -137,7 +137,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   content: {
     width: "100%",
-    maxWidth: MaxContentWidth,
     alignSelf: "center",
     padding: Spacing.lg,
     gap: Spacing.lg,

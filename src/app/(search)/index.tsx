@@ -12,7 +12,7 @@ import {
 
 import { ErrorMessage } from "@/components/error-message";
 import { PressableOpacity } from "@/components/pressable-opacity";
-import { MaxContentWidth, Radius, Spacing } from "@/constants/theme";
+import { Radius, Spacing } from "@/constants/theme";
 import { useSeparator } from "@/hooks/use-separator";
 import { useTheme } from "@/hooks/use-theme";
 import {
@@ -172,7 +172,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   content: {
     width: "100%",
-    maxWidth: MaxContentWidth,
     alignSelf: "center",
     padding: Spacing.lg,
     gap: Spacing.lg,
