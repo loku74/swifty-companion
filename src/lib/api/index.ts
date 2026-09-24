@@ -7,7 +7,6 @@ export { checkToken } from "./client";
 export { ApiError, type ApiErrorKind, toApiError } from "./errors";
 export {
   corruptToken,
-  expireTokenNow,
   getCurrentToken,
   getToken,
   hasCredentials,

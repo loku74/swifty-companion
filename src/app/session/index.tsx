@@ -16,7 +16,6 @@ import {
   type ApiError,
   checkToken,
   corruptToken,
-  expireTokenNow,
   getCurrentToken,
   hasCredentials,
   subscribeToToken,
@@ -109,11 +108,6 @@ export default function SessionScreen() {
           label="Get token"
           onPress={requestToken}
           loading={loading}
-        />
-        <ActionButton
-          label="Expire token now"
-          onPress={expireTokenNow}
-          disabled={!token}
         />
         <ActionButton
           label="Simulate revoked token"

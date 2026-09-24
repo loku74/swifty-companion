@@ -151,11 +151,6 @@ function patchToken(patch: Partial<Token>) {
   if (token) setToken({ ...token, ...patch });
 }
 
-/** Marks the cached token as expired without touching the API. */
-export function expireTokenNow() {
-  patchToken({ expiresAt: Date.now() });
-}
-
 /** Replaces the cached token with a bogus one, as if it had been revoked server-side. */
 export function corruptToken() {
   patchToken({ accessToken: "revoked-token" });
