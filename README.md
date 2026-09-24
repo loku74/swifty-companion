@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Swifty Companion
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile app for looking up 42 students: enter a login and see their profile,
+level, skills, projects and events, pulled from the
+[42 intra API](https://api.intra.42.fr/apidoc).
 
-## Get started
+Built with Expo (SDK 57), Expo Router and TypeScript. Runs on iOS, Android and
+web.
 
-1. Install dependencies
+## Features
+
+- **Search** by login, with validation and clear errors (unknown login, network
+  failure, timeout, rate limiting…). The last five searches are saved on the
+  device.
+- **Profile**: avatar, level and progress, contact details, wallet and
+  evaluation points, a cursus picker, and tabs for projects (passed or failed),
+  skills and events.
+- **Session** tab showing the OAuth2 token and its expiry, with buttons that
+  expire or corrupt it to show the app renewing it automatically.
+
+## Setup
+
+1. Create an application on the intra:
+   <https://profile.intra.42.fr/oauth/applications>.
+2. Copy `.env.example` to `.env` and fill in the application's UID and secret.
+3. Install dependencies and start the dev server:
 
    ```bash
-   npm install
+   bun install
+   bunx expo start
    ```
 
-2. Start the app
+Restart the dev server after changing `.env`.
 
-   ```bash
-   npx expo start
-   ```
+## Scripts
 
-In the output, you'll find options to open the app in a
+| Command             | What it does                        |
+| ------------------- | ----------------------------------- |
+| `bun run start`     | Start the Expo dev server           |
+| `bun run test`      | Run the unit tests (Jest)           |
+| `bun run check`     | Lint, format and sort imports       |
+| `bunx tsc --noEmit` | Typecheck                           |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project layout
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+  app/          Routes (Expo Router): search, user/[login], session
+  components/   UI components, profile sections under profile/
+  hooks/        useUser, useTheme, …
+  lib/api/      42 API client: OAuth2 token, retries, typed endpoints
+  lib/          Level maths, persisted recent searches
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### How the API client works
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- One OAuth2 token (client-credentials flow) is cached and shared by every
+  request. It's renewed 30 seconds before it expires, and when several requests
+  need a new token at once they share a single request.
+- A `401` drops the token and retries once with a new one.
+- A `429` waits for `Retry-After` (or 1 second) and retries, up to 3 times.
+- Requests time out after 15 seconds.

@@ -1,8 +1,6 @@
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import take from "lodash/take";
-import uniq from "lodash/uniq";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -24,8 +22,11 @@ import {
   normalizeLogin,
   toApiError,
 } from "@/lib/api";
-
-const MAX_RECENT = 5;
+import {
+  addRecentSearch,
+  loadRecentSearches,
+  saveRecentSearches,
+} from "@/lib/recent-searches";
 
 export default function SearchScreen() {
   const theme = useTheme();
@@ -35,6 +36,9 @@ export default function SearchScreen() {
   const [error, setError] = useState<ApiError | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [focused, setFocused] = useState(false);
+
+  // Loaded after mount so the web's static render matches the first client render.
+  useEffect(() => setRecent(loadRecentSearches()), []);
 
   async function search(input: string) {
     if (loading) return;
@@ -52,7 +56,9 @@ export default function SearchScreen() {
     try {
       // Fetch first so a missing login is reported here, on the search view.
       await fetchUser(login);
-      setRecent((previous) => take(uniq([login, ...previous]), MAX_RECENT));
+      const nextRecent = addRecentSearch(recent, login);
+      setRecent(nextRecent);
+      saveRecentSearches(nextRecent);
       router.push({ pathname: "/user/[login]", params: { login } });
     } catch (e) {
       setError(toApiError(e));
