@@ -1,7 +1,6 @@
+import Storage from "expo-sqlite/kv-store";
 import take from "lodash/take";
 import uniq from "lodash/uniq";
-
-import { storage } from "./storage";
 
 const STORAGE_KEY = "recent-searches";
 export const MAX_RECENT_SEARCHES = 5;
@@ -14,7 +13,7 @@ export function addRecentSearch(recent: string[], login: string) {
 /** Recent searches saved on this device, most recent first. */
 export function loadRecentSearches(): string[] {
   try {
-    const saved: unknown = JSON.parse(storage.getItem(STORAGE_KEY) ?? "[]");
+    const saved: unknown = JSON.parse(Storage.getItemSync(STORAGE_KEY) ?? "[]");
     return Array.isArray(saved)
       ? saved
           .filter((login) => typeof login === "string")
@@ -28,7 +27,7 @@ export function loadRecentSearches(): string[] {
 
 export function saveRecentSearches(recent: string[]) {
   try {
-    storage.setItem(STORAGE_KEY, JSON.stringify(recent));
+    Storage.setItemSync(STORAGE_KEY, JSON.stringify(recent));
   } catch {
     // Losing the history isn't worth interrupting a search for.
   }

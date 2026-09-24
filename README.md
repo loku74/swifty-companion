@@ -4,8 +4,7 @@ A mobile app for looking up 42 students: enter a login and see their profile,
 level, skills, projects and events, pulled from the
 [42 intra API](https://api.intra.42.fr/apidoc).
 
-Built with Expo (SDK 57), Expo Router and TypeScript. Runs on iOS, Android and
-web.
+Built with Expo (SDK 57), Expo Router and TypeScript. Targets iOS and Android.
 
 ## Features
 

@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -34,11 +34,8 @@ export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [recent, setRecent] = useState(loadRecentSearches);
   const [focused, setFocused] = useState(false);
-
-  // Loaded after mount so the web's static render matches the first client render.
-  useEffect(() => setRecent(loadRecentSearches()), []);
 
   async function search(input: string) {
     if (loading) return;

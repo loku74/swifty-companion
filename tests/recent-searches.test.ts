@@ -1,18 +1,16 @@
+import Storage from "expo-sqlite/kv-store";
 import {
   addRecentSearch,
   loadRecentSearches,
   MAX_RECENT_SEARCHES,
   saveRecentSearches,
 } from "@/lib/recent-searches";
-import { storage } from "@/lib/recent-searches/storage";
 
-jest.mock("@/lib/recent-searches/storage", () => {
+jest.mock("expo-sqlite/kv-store", () => {
   const items = new Map<string, string>();
   return {
-    storage: {
-      getItem: jest.fn((key: string) => items.get(key) ?? null),
-      setItem: jest.fn((key: string, value: string) => items.set(key, value)),
-    },
+    getItemSync: jest.fn((key: string) => items.get(key) ?? null),
+    setItemSync: jest.fn((key: string, value: string) => items.set(key, value)),
   };
 });
 
@@ -34,14 +32,14 @@ describe("recent searches storage", () => {
   });
 
   it("ignores corrupted data", () => {
-    storage.setItem("recent-searches", "{not json");
+    Storage.setItemSync("recent-searches", "{not json");
     expect(loadRecentSearches()).toEqual([]);
-    storage.setItem("recent-searches", JSON.stringify(["ok", 42, null]));
+    Storage.setItemSync("recent-searches", JSON.stringify(["ok", 42, null]));
     expect(loadRecentSearches()).toEqual(["ok"]);
   });
 
   it("survives a storage failure", () => {
-    jest.mocked(storage.getItem).mockImplementationOnce(() => {
+    jest.mocked(Storage.getItemSync).mockImplementationOnce(() => {
       throw new Error("disk error");
     });
     expect(loadRecentSearches()).toEqual([]);
