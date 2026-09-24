@@ -1,5 +1,5 @@
-import type { apiGet as ApiGet } from "./client";
-import type { ApiError } from "./errors";
+import type { apiGet as ApiGet } from "@/lib/api/client";
+import type { ApiError } from "@/lib/api/errors";
 
 function json(status: number, body: unknown, headers?: Record<string, string>) {
   return new Response(JSON.stringify(body), { status, headers });
@@ -18,7 +18,7 @@ beforeEach(() => {
   globalThis.fetch = fetchMock as unknown as typeof fetch;
   // Fresh module state (cached token) for every test.
   jest.isolateModules(() => {
-    apiGet = require("./client").apiGet;
+    apiGet = require("@/lib/api/client").apiGet;
   });
 });
 

@@ -1,4 +1,4 @@
-import { splitLevel } from "./level";
+import { splitLevel } from "@/lib/level";
 
 describe("splitLevel", () => {
   it("splits a level into its integer part and progress", () => {

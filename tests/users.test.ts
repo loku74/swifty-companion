@@ -1,5 +1,5 @@
-import { ApiError } from "./errors";
-import { normalizeLogin } from "./users";
+import { ApiError } from "@/lib/api/errors";
+import { normalizeLogin } from "@/lib/api/users";
 
 describe("normalizeLogin", () => {
   it("trims and lowercases", () => {

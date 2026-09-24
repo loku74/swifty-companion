@@ -3,10 +3,10 @@ import {
   loadRecentSearches,
   MAX_RECENT_SEARCHES,
   saveRecentSearches,
-} from ".";
-import { storage } from "./storage";
+} from "@/lib/recent-searches";
+import { storage } from "@/lib/recent-searches/storage";
 
-jest.mock("./storage", () => {
+jest.mock("@/lib/recent-searches/storage", () => {
   const items = new Map<string, string>();
   return {
     storage: {

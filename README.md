@@ -50,6 +50,7 @@ src/
   hooks/        useUser, useTheme, …
   lib/api/      42 API client: OAuth2 token, retries, typed endpoints
   lib/          Level maths, persisted recent searches
+tests/          Unit tests (Jest)
 ```
 
 ### How the API client works
