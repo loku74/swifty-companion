@@ -10,6 +10,7 @@ export {
   getCurrentToken,
   getToken,
   hasCredentials,
+  isTokenFresh,
   subscribeToToken,
   type Token,
 } from "./token";

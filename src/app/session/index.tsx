@@ -18,6 +18,7 @@ import {
   corruptToken,
   getCurrentToken,
   hasCredentials,
+  isTokenFresh,
   subscribeToToken,
   toApiError,
 } from "@/lib/api";
@@ -107,6 +108,7 @@ export default function SessionScreen() {
         <ActionButton
           label="Get token"
           onPress={requestToken}
+          disabled={isTokenFresh(token)}
           loading={loading}
         />
         <ActionButton

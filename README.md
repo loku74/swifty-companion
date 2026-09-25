@@ -14,8 +14,8 @@ Built with Expo (SDK 57), Expo Router and TypeScript. Targets iOS and Android.
 - **Profile**: avatar, level and progress, contact details, wallet and
   evaluation points, a cursus picker, and tabs for projects (passed or failed),
   skills and events.
-- **Session** tab showing the OAuth2 token and its expiry, with buttons that
-  expire or corrupt it to show the app renewing it automatically.
+- **Session** tab showing the OAuth2 token and its expiry, with a button that
+  corrupts it to show the app renewing it automatically.
 
 ## Setup
 
@@ -55,8 +55,9 @@ tests/          Unit tests (Jest)
 ### How the API client works
 
 - One OAuth2 token (client-credentials flow) is cached and shared by every
-  request. It's renewed 30 seconds before it expires, and when several requests
-  need a new token at once they share a single request.
+  request. It's renewed once it expires (the API hands back the same token
+  until then), and when several requests need a new token at once they share
+  a single request.
 - A `401` drops the token and retries once with a new one.
 - A `429` waits for `Retry-After` (or 1 second) and retries, up to 3 times.
 - Requests time out after 15 seconds.
