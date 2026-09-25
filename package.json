@@ -44,7 +44,8 @@
     "lint": "biome lint",
     "format": "biome format --write",
     "check": "biome check --write",
-    "test": "jest"
+    "test": "jest",
+    "test:api": "cd bruno && bunx @usebruno/cli run --delay 600"
   },
   "private": true,
   "jest": {

@@ -1,0 +1,54 @@
+info:
+  name: Get user events
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v2/users/{{login}}/events?page[size]=100&page[number]=1"
+  params:
+    - name: page[size]
+      value: "100"
+      type: query
+    - name: page[number]
+      value: "1"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        // Mirrors `FtEvent` in src/lib/api/types.ts. `apiGetAll` in client.ts
+        // fetches pages of 100 until one comes back shorter.
+        const events = res.getBody();
+
+        test("returns 200", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("returns at most one page of events", function () {
+          expect(events).to.be.an("array");
+          expect(events.length).to.be.at.most(100);
+        });
+
+        test("each event has the fields the app reads", function () {
+          for (const event of events) {
+            expect(event.id).to.be.a("number");
+            expect(event.name).to.be.a("string");
+            expect(event.kind).to.be.a("string");
+            expect(event.begin_at).to.be.a("string");
+            expect(event.end_at).to.be.a("string");
+            expect(event.nbr_subscribers).to.be.a("number");
+            expect(event.campus_ids).to.be.an("array");
+            expect(event.cursus_ids).to.be.an("array");
+            expect(event.themes).to.be.an("array");
+          }
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

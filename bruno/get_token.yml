@@ -1,0 +1,52 @@
+info:
+  name: Get token
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/oauth/token"
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: client_credentials
+      - name: client_id
+        value: "{{clientId}}"
+      - name: client_secret
+        value: "{{clientSecret}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 200) {
+          bru.setVar("accessToken", res.getBody().access_token);
+        }
+    - type: tests
+      code: |-
+        // Mirrors `TokenResponse` in src/lib/api/token.ts.
+        test("returns 200", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("returns a bearer token", function () {
+          const body = res.getBody();
+          expect(body.access_token).to.be.a("string").and.not.be.empty;
+          expect(body.token_type).to.equal("bearer");
+        });
+
+        test("returns expiry times in seconds", function () {
+          const body = res.getBody();
+          expect(body.expires_in).to.be.a("number").above(0);
+          expect(body.created_at).to.be.a("number");
+          // Seconds, not milliseconds: the app multiplies them by 1000.
+          expect(body.created_at).to.be.below(1e11);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

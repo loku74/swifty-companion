@@ -1,0 +1,29 @@
+info:
+  name: Token info
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{baseUrl}}/oauth/token/info"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        // `checkToken()` in client.ts calls this to detect a revoked token.
+        test("accepts the token", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("reports the time left", function () {
+          expect(res.getBody().expires_in_seconds).to.be.a("number").above(0);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

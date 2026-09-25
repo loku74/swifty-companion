@@ -1,0 +1,87 @@
+info:
+  name: Get user
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v2/users/{{login}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        // Mirrors `ApiUser` in src/lib/api/types.ts.
+        const user = res.getBody();
+
+        function expectNullable(value, type) {
+          if (value !== null) expect(value).to.be.a(type);
+        }
+
+        test("returns 200", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("returns the requested user", function () {
+          expect(user.login).to.equal(bru.interpolate("{{login}}"));
+          expect(user.id).to.be.a("number");
+          expect(user.email).to.be.a("string");
+          expect(user.displayname).to.be.a("string");
+        });
+
+        test("has the profile fields", function () {
+          expect(user.wallet).to.be.a("number");
+          expect(user.correction_point).to.be.a("number");
+          expectNullable(user.phone, "string");
+          expectNullable(user.location, "string");
+          expectNullable(user.pool_year, "string");
+        });
+
+        test("has an image", function () {
+          if (user.image === null) return;
+          expectNullable(user.image.link, "string");
+          if (user.image.versions !== null) {
+            expect(user.image.versions).to.include.keys("large", "medium", "small");
+          }
+        });
+
+        test("has campuses", function () {
+          expect(user.campus).to.be.an("array");
+          for (const campus of user.campus) {
+            expect(campus).to.include.keys("id", "name");
+          }
+        });
+
+        test("has cursus with levels and skills", function () {
+          expect(user.cursus_users).to.be.an("array");
+          for (const cursusUser of user.cursus_users) {
+            expect(cursusUser.level).to.be.a("number");
+            expect(cursusUser.begin_at).to.be.a("string");
+            expectNullable(cursusUser.grade, "string");
+            expect(cursusUser.cursus).to.include.keys("id", "name", "slug");
+            expect(cursusUser.skills).to.be.an("array");
+            for (const skill of cursusUser.skills) {
+              expect(skill).to.include.keys("id", "name", "level");
+              expect(skill.level).to.be.a("number");
+            }
+          }
+        });
+
+        test("has projects", function () {
+          expect(user.projects_users).to.be.an("array");
+          for (const projectUser of user.projects_users) {
+            expect(projectUser.status).to.be.a("string");
+            expect(projectUser).to.have.property("validated?");
+            expectNullable(projectUser.final_mark, "number");
+            expect(projectUser.cursus_ids).to.be.an("array");
+            expect(projectUser.project).to.include.keys("id", "name", "slug", "parent_id");
+          }
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

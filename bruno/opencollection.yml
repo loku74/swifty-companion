@@ -1,0 +1,43 @@
+opencollection: 1.0.0
+
+info:
+  name: 42 API
+
+request:
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+  variables:
+    - name: baseUrl
+      value: https://api.intra.42.fr
+    - name: clientId
+      value: "{{process.env.EXPO_PUBLIC_FT_CLIENT_ID}}"
+    - name: clientSecret
+      value: "{{process.env.EXPO_PUBLIC_FT_CLIENT_SECRET}}"
+    - name: login
+      value: lbourniq
+    - name: unknownLogin
+      value: no-such-login-xyz
+
+docs:
+  content: |-
+    # 42 API
+
+    Tests the 42 API endpoints used by the app (`src/lib/api`).
+
+    Credentials come from the repo's `.env` (`bruno/.env` is a symlink to it).
+    Run **Get token** first: it stores `accessToken`, which every other request
+    sends as a Bearer token.
+
+    From the terminal, in `bruno/`:
+
+        bunx @usebruno/cli run --delay 600
+
+    The delay keeps the run under the API's rate limit (~2 requests/second).
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
