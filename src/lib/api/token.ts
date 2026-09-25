@@ -2,7 +2,7 @@
  * OAuth2 access token for the 42 API (intra client-credentials flow).
  *
  * A single token is cached and shared by every request. It is only re-created
- * when it is about to expire, or when the API rejects it (see `client.ts`).
+ * when it has expired, or when the API rejects it (see `client.ts`).
  */
 
 import { ApiError } from "./errors";
@@ -10,9 +10,6 @@ import { buildUrl, encodeQuery, request, throwForStatus } from "./http";
 
 const CLIENT_ID = process.env.EXPO_PUBLIC_FT_CLIENT_ID;
 const CLIENT_SECRET = process.env.EXPO_PUBLIC_FT_CLIENT_SECRET;
-
-/** Refresh the token slightly before it actually expires. */
-const EXPIRY_MARGIN_MS = 30_000;
 
 export type Token = {
   accessToken: string;
@@ -59,9 +56,9 @@ export function getCurrentToken() {
 }
 
 function isFresh(candidate: Token | null): candidate is Token {
-  return (
-    candidate !== null && Date.now() < candidate.expiresAt - EXPIRY_MARGIN_MS
-  );
+  // No early renewal: the API hands back the same token until it expires. A
+  // request sent just as it expires gets a 401, and `client.ts` retries it.
+  return candidate !== null && Date.now() < candidate.expiresAt;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +148,17 @@ function patchToken(patch: Partial<Token>) {
   if (token) setToken({ ...token, ...patch });
 }
 
+const REVOKED_TOKEN = "revoked-token";
+
 /** Replaces the cached token with a bogus one, as if it had been revoked server-side. */
 export function corruptToken() {
-  patchToken({ accessToken: "revoked-token" });
+  patchToken({ accessToken: REVOKED_TOKEN });
+}
+
+/**
+ * Whether the token can be used as is: not expired, and not revoked by
+ * `corruptToken`. A token revoked server-side only shows up as a 401.
+ */
+export function isTokenFresh(candidate: Token | null) {
+  return isFresh(candidate) && candidate.accessToken !== REVOKED_TOKEN;
 }

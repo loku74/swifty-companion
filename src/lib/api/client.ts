@@ -23,7 +23,8 @@ function getRetryDelay(response: Response) {
  * Authenticated GET on the 42 API, returning the parsed JSON body.
  *
  * - 429 (too many requests): waits and retries, up to a few times.
- * - 401 (token revoked or expired early): gets a new token and retries once.
+ * - 401 (token revoked, or expired while the request was in flight): gets a
+ *   new token and retries once.
  */
 export async function apiGet<T>(path: string, query?: Query): Promise<T> {
   const url = buildUrl(path, query);
