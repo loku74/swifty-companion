@@ -2,6 +2,7 @@ import Storage from "expo-sqlite/kv-store";
 import take from "lodash/take";
 import uniq from "lodash/uniq";
 
+// https://docs.expo.dev/versions/latest/sdk/sqlite/#key-value-storage
 const STORAGE_KEY = "recent-searches";
 export const MAX_RECENT_SEARCHES = 10;
 
