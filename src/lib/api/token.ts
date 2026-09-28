@@ -13,27 +13,16 @@ const CLIENT_SECRET = process.env.EXPO_PUBLIC_FT_CLIENT_SECRET;
 
 export type Token = {
   accessToken: string;
-  /**
-   * Epoch ms, as reported by the API. The API hands back the same token until
-   * it expires, so this doesn't change when the app re-requests it.
-   */
   createdAt: number;
-  /** Epoch ms when this device last received the token. */
   fetchedAt: number;
-  /** Epoch ms, as measured by this device. */
   expiresAt: number;
 };
 
-/** Body of a successful `POST /oauth/token`. Times are in seconds. */
 type TokenResponse = {
   access_token: string;
   expires_in: number;
   created_at: number;
 };
-
-// ---------------------------------------------------------------------------
-// Cached token, observable with `useSyncExternalStore`
-// ---------------------------------------------------------------------------
 
 let token: Token | null = null;
 let pendingToken: Promise<Token> | null = null;
@@ -56,14 +45,8 @@ export function getCurrentToken() {
 }
 
 function isFresh(candidate: Token | null): candidate is Token {
-  // No early renewal: the API hands back the same token until it expires. A
-  // request sent just as it expires gets a 401, and `client.ts` retries it.
   return candidate !== null && Date.now() < candidate.expiresAt;
 }
-
-// ---------------------------------------------------------------------------
-// Requesting a token
-// ---------------------------------------------------------------------------
 
 export function hasCredentials() {
   return Boolean(CLIENT_ID && CLIENT_SECRET);
@@ -112,14 +95,6 @@ async function requestToken(): Promise<Token> {
   return toToken(await response.json());
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the cached token, or creates a new one if it is missing or expired.
- * Concurrent callers share the same in-flight request.
- */
 export async function getToken(): Promise<Token> {
   if (isFresh(token)) return token;
 
@@ -135,14 +110,13 @@ export async function getToken(): Promise<Token> {
   return pendingToken;
 }
 
-/** Drops the cached token; the next request creates a new one. */
 export function invalidateToken() {
   setToken(null);
 }
 
-// ---------------------------------------------------------------------------
 // Debug helpers, used by the Session tab to demonstrate token renewal
-// ---------------------------------------------------------------------------
+// |   |   |
+// v   v   v
 
 function patchToken(patch: Partial<Token>) {
   if (token) setToken({ ...token, ...patch });
@@ -150,15 +124,10 @@ function patchToken(patch: Partial<Token>) {
 
 const REVOKED_TOKEN = "revoked-token";
 
-/** Replaces the cached token with a bogus one, as if it had been revoked server-side. */
 export function corruptToken() {
   patchToken({ accessToken: REVOKED_TOKEN });
 }
 
-/**
- * Whether the token can be used as is: not expired, and not revoked by
- * `corruptToken`. A token revoked server-side only shows up as a 401.
- */
 export function isTokenFresh(candidate: Token | null) {
   return isFresh(candidate) && candidate.accessToken !== REVOKED_TOKEN;
 }

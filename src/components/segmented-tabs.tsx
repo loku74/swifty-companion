@@ -6,7 +6,6 @@ import { useTheme } from "@/hooks/use-theme";
 export type SegmentedTab<T extends string> = {
   key: T;
   label: string;
-  /** Shown next to the label, once known. */
   count?: number;
 };
 
@@ -16,7 +15,6 @@ type SegmentedTabsProps<T extends string> = {
   onSelect: (key: T) => void;
 };
 
-/** A minimalist segmented control to switch between sections of a screen. */
 export function SegmentedTabs<T extends string>({
   tabs,
   selected,

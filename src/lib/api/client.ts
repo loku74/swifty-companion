@@ -73,11 +73,6 @@ export async function apiGetAll<T>(path: string): Promise<T[]> {
   }
 }
 
-/**
- * Sends the current token to the API, getting a new one if it was rejected.
- * `getToken()` alone only checks the expiry date, so it can't notice a
- * revoked token.
- */
 export async function checkToken() {
   await apiGet("/oauth/token/info");
 }

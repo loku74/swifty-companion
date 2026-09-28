@@ -27,7 +27,6 @@ import type { CursusUser } from "@/lib/api";
 
 const MAIN_CURSUS_SLUG = "42cursus";
 
-/** Prefers the main 42 cursus, otherwise the most recently started one. */
 function getDefaultCursus(cursusUsers: CursusUser[]) {
   return (
     cursusUsers.find(
@@ -53,9 +52,9 @@ export default function ProfileScreen() {
   const projects = user
     ? getCompletedProjects(user.projects_users, cursus?.cursus_id)
     : [];
-  // Events aren't tied to a cursus: only list them under the main one.
+
   const showEvents = cursus?.cursus.slug === MAIN_CURSUS_SLUG;
-  // Falls back to Projects when switching away from 42cursus on Events.
+  // Falls back to Projects tab when switching away from the main cursus on Events.
   const visibleSection =
     section === "events" && !showEvents ? "projects" : section;
 

@@ -11,7 +11,6 @@ import { useSeparator } from "@/hooks/use-separator";
 import { useTheme } from "@/hooks/use-theme";
 import type { ProjectUser } from "@/lib/api";
 
-/** Marks with their own badge color instead of the passed/failed one. */
 const SPECIAL_MARK_COLORS: Record<number, string> = {
   [-42]: "#8B0A1A",
   125: "#FF75F6",
@@ -19,7 +18,6 @@ const SPECIAL_MARK_COLORS: Record<number, string> = {
 
 type SortOrder = "recent" | "highest" | "lowest";
 
-/** Tapping the sort button cycles through these, in order. */
 const SORT_ORDERS: { order: SortOrder; label: string }[] = [
   { order: "recent", label: "Recent" },
   { order: "highest", label: "Highest mark" },

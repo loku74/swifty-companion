@@ -46,8 +46,6 @@ function getInfoRows(user: User): InfoRow[] {
       label: "Location",
       icon: { ios: "desktopcomputer", android: "computer" },
       value: user.location ?? UNAVAILABLE,
-      // The API only sets a location while the student is logged in on a
-      // campus computer.
       online: user.location !== null,
     },
   ];
@@ -130,13 +128,7 @@ export function ProfileDetails({ user }: { user: User }) {
 
       <View style={styles.rows}>
         {getInfoRows(user).map((row) => (
-          <View
-            key={row.label}
-            style={styles.row}
-            // Grouping the row would hide its copy button from screen readers.
-            accessible={!row.copyable}
-            accessibilityLabel={`${row.label}: ${row.value} ${row.online ? ", online" : ""}`}
-          >
+          <View key={row.label} style={styles.row}>
             <SymbolView
               name={row.icon}
               size={16}

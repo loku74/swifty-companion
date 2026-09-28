@@ -17,7 +17,6 @@ const TITLES: Record<ApiErrorKind, string> = {
   unknown: "Something went wrong",
 };
 
-/** Errors worth retrying as-is, without changing the input. */
 const RETRYABLE: ApiErrorKind[] = [
   "network",
   "timeout",

@@ -1,5 +1,3 @@
-/** Shapes of the 42 API responses the app uses (only the fields it reads). */
-
 export type Skill = { id: number; name: string; level: number };
 
 export type CursusUser = {

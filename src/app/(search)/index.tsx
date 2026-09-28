@@ -50,7 +50,6 @@ export default function SearchScreen() {
 
     setLoading(true);
     try {
-      // Fetch first so a missing login is reported here, on the search view.
       await fetchUser(login);
       const nextRecent = addRecentSearch(recent, login);
       setRecent(nextRecent);

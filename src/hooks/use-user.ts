@@ -13,10 +13,6 @@ type UserState =
   | { status: "success"; user: User; error?: undefined }
   | { status: "error"; user?: undefined; error: ApiError };
 
-/**
- * Loads a 42 user. Uses the copy cached by the search screen when available,
- * so opening a profile doesn't hit the API twice.
- */
 export function useUser(login: string) {
   const [state, setState] = useState<UserState>(() => {
     const cached = getCachedUser(login);
@@ -27,7 +23,6 @@ export function useUser(login: string) {
   useEffect(() => {
     if (getCachedUser(login)) return;
 
-    // The initial state is already 'loading': a profile screen's login never changes.
     let cancelled = false;
     fetchUser(login).then(
       (user) => !cancelled && setState({ status: "success", user }),

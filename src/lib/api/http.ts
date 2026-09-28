@@ -5,10 +5,6 @@ const REQUEST_TIMEOUT_MS = 15_000;
 
 export type Query = Record<string, string | number>;
 
-/**
- * `{ a: 1, b: "x y" }` → `a=1&b=x%20y`, for URLs and form bodies. Keys are
- * encoded too, so the API's `page[size]` is sent as `page%5Bsize%5D`.
- */
 export function encodeQuery(query: Query) {
   return Object.entries(query)
     .map(
@@ -18,7 +14,6 @@ export function encodeQuery(query: Query) {
     .join("&");
 }
 
-/** Full URL for an API path, with its query string if any. */
 export function buildUrl(path: string, query: Query = {}) {
   const params = encodeQuery(query);
   return `${API_URL}${path}${params ? `?${params}` : ""}`;
@@ -50,7 +45,6 @@ export async function request(
   }
 }
 
-/** Throws an `ApiError` matching the response's HTTP status, if it failed. */
 export function throwForStatus({ ok, status }: Response) {
   if (ok) return;
 

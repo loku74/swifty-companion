@@ -6,7 +6,6 @@ import type { ApiUser, FtEvent, User } from "./types";
 
 const LOGIN_PATTERN = /^[a-z][a-z0-9_-]*$/;
 
-/** Trims and lowercases a login, and throws if it can't be a valid 42 login. */
 export function normalizeLogin(input: string) {
   const login = input.trim().toLowerCase();
   if (!login) {
@@ -31,7 +30,6 @@ function userPath(login: string) {
   return `/v2/users/${encodeURIComponent(login)}`;
 }
 
-/** Fetches a user's profile and their events, in parallel, and caches them. */
 export async function fetchUser(login: string): Promise<User> {
   try {
     const [profile, events] = await Promise.all([
